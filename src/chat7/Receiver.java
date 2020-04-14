@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.SocketException;
+import java.security.Key;
+import java.util.StringTokenizer;
 
 public class Receiver extends Thread{
 	
@@ -23,6 +25,10 @@ public class Receiver extends Thread{
 	}
 	@Override
 	public void run() {
+		///
+		super.run();
+		///
+
 		while(in!=null) {
 			try {
 				System.out.println("Thread Receive: " + in.readLine());
@@ -41,6 +47,6 @@ public class Receiver extends Thread{
 		catch (Exception e) {
 			System.out.println("예외발생: "+ e);
 		}
-	}
 
+	}
 }

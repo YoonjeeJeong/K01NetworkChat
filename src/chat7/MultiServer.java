@@ -3,6 +3,9 @@ package chat7;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.Character.Subset;
+import java.lang.reflect.Array;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
@@ -12,6 +15,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 public class MultiServer extends ConnectDB{	
 	static ServerSocket serverSocket = null;
@@ -80,6 +84,20 @@ public class MultiServer extends ConnectDB{
 					if(name.equals("")) {
 						it_out.println(URLEncoder.encode(msg, "UTF-8"));
 					}
+					///추가된 부분////////////////////
+					// /to_이름_내용 스페이스 있음
+					
+						if(array[0].equals("/to")){
+						for(int i=2 ; i<array.length ; i++) {
+							
+							sendAllMsg(name, msg);//특정 인물에게만 보내기
+							
+						}
+						
+				
+						
+					///추가된 부분///////////////////
+					}
 					else {
 						it_out.println("["+name+"]:"+msg);
 					}
@@ -137,7 +155,7 @@ public class MultiServer extends ConnectDB{
 						System.out.println(s);
 						
 						if(s==null) break;
-						
+												
 						String query = "INSERT into chating_tb values(seq_chating.nextval, ?, ?, sysdate)";
 				
 						psmt = con.prepareStatement(query);
