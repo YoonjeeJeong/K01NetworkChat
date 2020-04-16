@@ -1,11 +1,8 @@
-package chat7;
+package chat8;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.lang.Character.Subset;
-import java.lang.reflect.Array;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
@@ -15,9 +12,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
+import java.util.Scanner;
+import java.util.StringTokenizer;
 
 public class MultiServer extends ConnectDB{	
+
 	static ServerSocket serverSocket = null;
 	static Socket socket=null;
 	//클라이언트 정보 저장을 위한 맵 컬렉션 생성!
@@ -36,11 +35,7 @@ public class MultiServer extends ConnectDB{
 		try {
 			serverSocket = new ServerSocket(9999);
 			System.out.println("서버가 시작되었습니다");
-			/*
-			 한명의 클라이언트가 접속할때마다 접속을 허용(accept())해주고
-			 동시에 MultiServerT 쓰레드를 생성한다.
-			 해당 쓰레드는 한명의 클라이언트가 전송하는 메세지를 읽어서
-			 Echo해주는 역할을 담당한다	*/
+			
 			while(true) {
 				socket = serverSocket.accept();
 				
@@ -78,9 +73,6 @@ public class MultiServer extends ConnectDB{
 					PrintWriter it_out = 
 							(PrintWriter)clientMap.get(it.next());
 					
-					//클라이언트에게 메세지를 전달한다
-					/*매개변수 name이 있는 경우에는 이름+메세지
-					 없는 경우에는 메세지만 클라이언트로 전송함*/
 					if(name.equals("")) {
 						it_out.println(URLEncoder.encode(msg, "UTF-8"));
 					}
@@ -93,13 +85,31 @@ public class MultiServer extends ConnectDB{
 				}
 			}
 		}
+		//귓속말 메소드
+		public void sendPrivMsg(String from_who, String to_who, String toMsg) {
+			
+			Iterator<String> it = clientMap.keySet().iterator();		
+			
+			while(it.hasNext()) {
+				try {
+									
+					if(to_who.equals(it.next())) {
+						PrintWriter it_out = (PrintWriter)clientMap.get(to_who);
+						it_out.println(from_who +"님이 보낸 귓속말:"+toMsg);
+					}
+				}
+				catch (Exception e) {
+					System.out.println("예외" + e);
+				}
+			}
+		}//귓속말
 		class MultiServerT extends Thread {
 			
 			//멤버변수
 			Socket socket;
 			PrintWriter out = null;
 			BufferedReader in = null;
-			
+			Scanner scan = new Scanner(System.in);
 			//생성자: 소켓을 기반으로 입출력 스트림을 생성한다
 			public MultiServerT(Socket socket) {
 				this.socket = socket;
@@ -133,15 +143,43 @@ public class MultiServer extends ConnectDB{
 					System.out.println(name+"접속함");
 					System.out.println("현재 접속자 수는 "+clientMap.size()+"명입니다");
 				
-					//클라이언트의 메세지를 읽어서 콘솔에 출력하고 Echo해준다
 					//입력한 메세지는 모든 클라이언트에게 echo 됨
 					while(in!=null) {
+						
 						s=in.readLine();
 						s=URLDecoder.decode(s, "UTF-8");
+						System.out.println(name + ">> "+s);
 						System.out.println(s);
-						
+					
 						if(s==null) break;
-												
+						////added - 리스트 출력
+						Iterator<String> mapMsg = clientMap.keySet().iterator();
+						if(s.startsWith("/")) {
+							
+							if(s.substring(0).startsWith("/list")) {
+								out.println("현재 접속자 리스트: ");
+								while(mapMsg.hasNext()) {
+									String keys = mapMsg.next();
+									out.println("["+ keys + "]");
+								}
+							}
+							//귓속말
+							else if(s.substring(0).startsWith("/to")) {
+								String[] sArray = s.split(" ");//공백으로 배열을 나눈다.
+								/*
+								 split()으로 문장 "/to Lala Hello"를 공백으로 나눈다.
+								 0번 배열은 /to, 1번 배열은 Lala, 2번은 Hello가 된다
+								 */
+								String to_who= sArray[1];//to_who(받는이)는 split을 썼으므로 1번이 된다
+									sendPrivMsg(name, to_who, s);
+								}
+								out.println();
+							}
+						else {
+							sendAllMsg(name, s);
+						}////added
+					}
+						
 						String query = "INSERT into chating_tb values(seq_chating.nextval, ?, ?, sysdate)";
 				
 						psmt = con.prepareStatement(query);
@@ -150,11 +188,9 @@ public class MultiServer extends ConnectDB{
 						psmt.setString(2, s);
 						
 						psmt.executeUpdate();
-						System.out.println(name + ">> "+s);
-						sendAllMsg(name, s);
-					}
-				}
-				catch (Exception e) {
+						//System.out.println(name + ">> "+s);
+						
+					}catch (Exception e) {
 					System.out.println("예외: "+ e);
 				}
 				finally {
@@ -176,7 +212,9 @@ public class MultiServer extends ConnectDB{
 						e.printStackTrace();
 					}
 				}
+				
 			}
+				
 		}
 		void execute(){
 	}
