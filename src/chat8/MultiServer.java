@@ -20,7 +20,7 @@ public class MultiServer extends ConnectDB{
 	static ServerSocket serverSocket = null;
 	static Socket socket=null;
 	//클라이언트 정보 저장을 위한 맵 컬렉션 생성!
-	Map<String, PrintWriter> clientMap;
+	Map<String, PrintWriter> clientMap; 
 	
 	//생성자
 	public MultiServer() {	
@@ -58,6 +58,7 @@ public class MultiServer extends ConnectDB{
 		}		
 	}	
 	public static void main(String[] args) {
+		
 		MultiServer ms = new MultiServer();
 		ms.init();	
 	}
@@ -72,7 +73,8 @@ public class MultiServer extends ConnectDB{
 					//각 클라이언트의 PrintWriter객체를 얻어온다
 					PrintWriter it_out = 
 							(PrintWriter)clientMap.get(it.next());
-					
+					/*매개변수 name이 있는 경우에는 이름+메세지
+					 없는 경우에는 메세지만 클라이언트로 전송함*/
 					if(name.equals("")) {
 						it_out.println(URLEncoder.encode(msg, "UTF-8"));
 					}
@@ -87,9 +89,10 @@ public class MultiServer extends ConnectDB{
 		}
 		//귓속말 메소드
 		public void sendPrivMsg(String from_who, String to_who, String toMsg) {
-			
+			//Map에 저장된 객체의 키값(이름)을 먼저 얻어온다
 			Iterator<String> it = clientMap.keySet().iterator();		
 			
+			//저장된 객체(클라이언트)의 갯수만큼 반복한다
 			while(it.hasNext()) {
 				try {
 									
@@ -102,17 +105,20 @@ public class MultiServer extends ConnectDB{
 					System.out.println("예외" + e);
 				}
 			}
-		}//귓속말
+		}//귓속말 끝
+		
 		class MultiServerT extends Thread {
 			
 			//멤버변수
 			Socket socket;
-			PrintWriter out = null;
-			BufferedReader in = null;
+			PrintWriter out = null;//쓰고
+			BufferedReader in = null;//읽는다
 			Scanner scan = new Scanner(System.in);
+			
 			//생성자: 소켓을 기반으로 입출력 스트림을 생성한다
 			public MultiServerT(Socket socket) {
 				this.socket = socket;
+				
 				try {
 					out = new PrintWriter(this.socket.getOutputStream(), true);
 					in = new BufferedReader(new InputStreamReader
