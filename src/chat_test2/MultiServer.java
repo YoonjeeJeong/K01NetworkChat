@@ -1,4 +1,4 @@
-package chat8;
+package chat_test2;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -185,7 +185,7 @@ public class MultiServer extends ConnectDB{
 							sendAllMsg(name, s);
 						}////added
 						
-						String query = "INSERT into chating_tb values(seq_chating.nextval, ?, ?, sysdate)";
+						String query = "INSERT into chatting_tb values(chatting_seq.nextval, ?, ?, sysdate)";
 				
 						psmt = con.prepareStatement(query);
 						
